@@ -3,20 +3,21 @@ if game.PlaceId ~= 2753915549 and game.PlaceId ~= 4442272183 and game.PlaceId ~=
     return -- Sai do script se não estiver no Blox Fruits
 end
 
-local Library = loadstring(game:HttpGet("https://pastebin.com/raw/LTn9smKx"))() -- Biblioteca para UI
-local Window = Library.CreateLib("Banana Cat Hub - Blox Fruit [Premium]", "DarkTheme")
+-- Baixa e executa a Orion Library
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local Window = OrionLib:MakeWindow({Name = "NewWorld [Free]", HidePremium = false, SaveConfig = true, ConfigFolder = "NewWorld"})
 
 -- Criando as abas
-local StatusTab = Window:NewTab("Status And Server")
-local FarmingTab = Window:NewTab("Tab Farming")
-local SeaEventTab = Window:NewTab("Tab Sea Event")
-local FarmingOtherTab = Window:NewTab("Tab Farming Other")
-local UpgradeRaceTab = Window:NewTab("Upgrade Race") -- Nova aba adicionada
+local StatusTab = Window:MakeTab({Name = "Status And Server", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local FarmingTab = Window:MakeTab({Name = "Tab Farming", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local SeaEventTab = Window:MakeTab({Name = "Tab Sea Event", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local FarmingOtherTab = Window:MakeTab({Name = "Tab Farming Other", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local UpgradeRaceTab = Window:MakeTab({Name = "Upgrade Race", Icon = "rbxassetid://4483345998", PremiumOnly = false})
 
 -------------------
 -- STATUS E SERVIDOR
 -------------------
-local StatusSection = StatusTab:NewSection("Server & Status")
+StatusTab:AddLabel("Server & Status")
 
 local function GetServerTime()
     local seconds = math.floor(workspace.DistributedGameTime)
@@ -25,138 +26,195 @@ local function GetServerTime()
     return string.format("| Hour: %d | Minute: %d | Second: %d |", hours, minutes % 60, seconds % 60)
 end
 
-StatusSection:NewLabel("Time")
-StatusSection:NewLabel(GetServerTime())
+StatusTab:AddParagraph("Time", GetServerTime())
 
 game:GetService("RunService").RenderStepped:Connect(function()
-    StatusSection:UpdateLabel(2, GetServerTime())
+    StatusTab:UpdateParagraph("Time", GetServerTime())
 end)
 
-StatusSection:NewButton("Hop Server", "Hops to another server", function()
+StatusTab:AddButton({Name = "Hop Server", Callback = function()
     game:GetService("TeleportService"):Teleport(game.PlaceId)
-end)
+end})
 
 -------------------
 -- TAB FARMING
 -------------------
-local FarmingSection = FarmingTab:NewSection("Farming Settings")
+FarmingTab:AddLabel("Farming Settings")
 
-FarmingSection:NewToggle("Use skill fast dont hold", "Ativa uso rápido de habilidades", function(state)
-    print("Use skill fast: " .. tostring(state))
-end)
+FarmingTab:AddToggle({
+    Name = "Use skill fast (don't hold)",
+    Default = false,
+    Callback = function(state)
+        print("Use skill fast: " .. tostring(state))
+    end
+})
 
-FarmingSection:NewDropdown("Select Method Farm", {"Level Farm", "Mastery Farm", "Material Farm"}, function(selected)
-    print("Selected Farming Method: " .. selected)
-end)
+FarmingTab:AddDropdown({
+    Name = "Select Method Farm",
+    Options = {"Level Farm", "Mastery Farm", "Material Farm"},
+    Callback = function(selected)
+        print("Selected Farming Method: " .. selected)
+    end
+})
 
-FarmingSection:NewButton("Start Farm", "Inicia o farm", function()
-    print("Farm Started!")
-end)
+FarmingTab:AddButton({
+    Name = "Start Farm",
+    Callback = function()
+        print("Farm Started!")
+    end
+})
 
 -------------------
 -- TAB SEA EVENT
 -------------------
-local SeaEventSection = SeaEventTab:NewSection("Sea Event Settings")
+SeaEventTab:AddLabel("Sea Event Settings")
 
-SeaEventSection:NewDropdown("Select Zone", {"Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6"}, function(selectedZone)
-    print("Selected Zone: " .. selectedZone)
-end)
+SeaEventTab:AddDropdown({
+    Name = "Select Zone",
+    Options = {"Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6"},
+    Callback = function(selectedZone)
+        print("Selected Zone: " .. selectedZone)
+    end
+})
 
-SeaEventSection:NewDropdown("Select Boat", {"GrandBrigade", "SmallBoat", "FastBoat"}, function(selectedBoat)
-    print("Selected Boat: " .. selectedBoat)
-end)
+SeaEventTab:AddDropdown({
+    Name = "Select Boat",
+    Options = {"GrandBrigade", "SmallBoat", "FastBoat"},
+    Callback = function(selectedBoat)
+        print("Selected Boat: " .. selectedBoat)
+    end
+})
 
-SeaEventSection:NewToggle("Auto Sea Event", function(state)
-    getgenv().AutoSeaEvent = state
-    while getgenv().AutoSeaEvent do
-        wait(1)
-        local player = game.Players.LocalPlayer
-        local boat = workspace:FindFirstChild(player.Name .. "'s Boat")
-        
-        if boat then
-            print("Boat encontrado. Seguindo para o evento do mar.")
-            boat.PrimaryPart.CFrame = CFrame.new(5000, 50, 5000) -- Move para um evento do mar
-        else
-            print("Nenhum barco encontrado. Tentando spawnar um barco.")
-            game.ReplicatedStorage.Remotes.SpawnBoat:FireServer("GrandBrigade") -- Spawna barco
+SeaEventTab:AddToggle({
+    Name = "Auto Sea Event",
+    Default = false,
+    Callback = function(state)
+        getgenv().AutoSeaEvent = state
+        while getgenv().AutoSeaEvent do
+            wait(1)
+            local player = game.Players.LocalPlayer
+            local boat = workspace:FindFirstChild(player.Name .. "'s Boat")
+            
+            if boat then
+                print("Boat encontrado. Seguindo para o evento do mar.")
+                boat.PrimaryPart.CFrame = CFrame.new(5000, 50, 5000)
+            else
+                print("Nenhum barco encontrado. Tentando spawnar um barco.")
+                game.ReplicatedStorage.Remotes.SpawnBoat:FireServer("GrandBrigade")
+            end
         end
     end
-end)
+})
 
-SeaEventSection:NewButton("Reset Character Buy Boat", function()
-    game.Players.LocalPlayer.Character:BreakJoints()
-end)
+SeaEventTab:AddButton({
+    Name = "Reset Character Buy Boat",
+    Callback = function()
+        game.Players.LocalPlayer.Character:BreakJoints()
+    end
+})
 
 -------------------
 -- TAB FARMING OTHER
 -------------------
-local FarmingOtherSection = FarmingOtherTab:NewSection("Advanced Farming Options")
+FarmingOtherTab:AddLabel("Advanced Farming Options")
 
-FarmingOtherSection:NewToggle("Auto Quest Dojo Trainee", function(state)
-    print("Auto Quest Dojo Trainee: " .. tostring(state))
-end)
+FarmingOtherTab:AddToggle({
+    Name = "Auto Quest Dojo Trainee",
+    Default = false,
+    Callback = function(state)
+        print("Auto Quest Dojo Trainee: " .. tostring(state))
+    end
+})
 
-FarmingOtherSection:NewToggle("Auto Chest", function(state)
-    print("Auto Chest: " .. tostring(state))
-end)
+FarmingOtherTab:AddToggle({
+    Name = "Auto Chest",
+    Default = false,
+    Callback = function(state)
+        print("Auto Chest: " .. tostring(state))
+    end
+})
 
-FarmingOtherSection:NewDropdown("Select Mobs", {"Mob 1", "Mob 2", "Mob 3"}, function(selectedMob)
-    print("Selected Mob: " .. selectedMob)
-end)
+FarmingOtherTab:AddDropdown({
+    Name = "Select Mobs",
+    Options = {"Mob 1", "Mob 2", "Mob 3"},
+    Callback = function(selectedMob)
+        print("Selected Mob: " .. selectedMob)
+    end
+})
 
-FarmingOtherSection:NewButton("Kill Mob", function()
-    print("Killing selected mob...")
-end)
+FarmingOtherTab:AddButton({
+    Name = "Kill Mob",
+    Callback = function()
+        print("Killing selected mob...")
+    end
+})
 
 -------------------
 -- TAB UPGRADE RACE
 -------------------
-local UpgradeRaceSection = UpgradeRaceTab:NewSection("Race Upgrade Options")
+UpgradeRaceTab:AddLabel("Race Upgrade Options")
 
-UpgradeRaceSection:NewButton("Teleport to Ancient Clock", "Leva até o relógio antigo", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(28385, 14896, 108)
-end)
-
-UpgradeRaceSection:NewToggle("Auto Buy Race Gears", "Compra engrenagens automaticamente", function(state)
-    getgenv().AutoBuyGears = state
-    while getgenv().AutoBuyGears do
-        wait(1)
-        game.ReplicatedStorage.Remotes.CommF_:InvokeServer("BuyRaceGear")
+UpgradeRaceTab:AddButton({
+    Name = "Teleport to Ancient Clock",
+    Callback = function()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(28385, 14896, 108)
     end
-end)
+})
 
-UpgradeRaceSection:NewToggle("Auto Upgrade Race V2", "Evolui a raça para V2 automaticamente", function(state)
-    getgenv().AutoUpgradeRaceV2 = state
-    while getgenv().AutoUpgradeRaceV2 do
-        wait(1)
-        game.ReplicatedStorage.Remotes.CommF_:InvokeServer("EvolveRace", "RaceV2")
+UpgradeRaceTab:AddToggle({
+    Name = "Auto Buy Race Gears",
+    Default = false,
+    Callback = function(state)
+        getgenv().AutoBuyGears = state
+        while getgenv().AutoBuyGears do
+            wait(1)
+            game.ReplicatedStorage.Remotes.CommF_:InvokeServer("BuyRaceGear")
+        end
     end
-end)
+})
 
-UpgradeRaceSection:NewToggle("Auto Upgrade Race V3", "Evolui a raça para V3 automaticamente", function(state)
-    getgenv().AutoUpgradeRaceV3 = state
-    while getgenv().AutoUpgradeRaceV3 do
-        wait(1)
-        game.ReplicatedStorage.Remotes.CommF_:InvokeServer("EvolveRace", "RaceV3")
+UpgradeRaceTab:AddToggle({
+    Name = "Auto Upgrade Race V2",
+    Default = false,
+    Callback = function(state)
+        getgenv().AutoUpgradeRaceV2 = state
+        while getgenv().AutoUpgradeRaceV2 do
+            wait(1)
+            game.ReplicatedStorage.Remotes.CommF_:InvokeServer("EvolveRace", "RaceV2")
+        end
     end
-end)
+})
 
-UpgradeRaceSection:NewToggle("Auto Upgrade Race V4", "Evolui a raça para V4 automaticamente", function(state)
-    getgenv().AutoUpgradeRaceV4 = state
-    while getgenv().AutoUpgradeRaceV4 do
-        wait(1)
-        game.ReplicatedStorage.Remotes.CommF_:InvokeServer("EvolveRace", "RaceV4")
+UpgradeRaceTab:AddToggle({
+    Name = "Auto Upgrade Race V3",
+    Default = false,
+    Callback = function(state)
+        getgenv().AutoUpgradeRaceV3 = state
+        while getgenv().AutoUpgradeRaceV3 do
+            wait(1)
+            game.ReplicatedStorage.Remotes.CommF_:InvokeServer("EvolveRace", "RaceV3")
+        end
     end
-end)
+})
 
-UpgradeRaceSection:NewToggle("Auto Start Race Trials", "Inicia as provas da raça automaticamente", function(state)
-    getgenv().AutoRaceTrials = state
-    while getgenv().AutoRaceTrials do
-        wait(1)
-        game.ReplicatedStorage.Remotes.CommF_:InvokeServer("StartRaceTrial")
+UpgradeRaceTab:AddToggle({
+    Name = "Auto Upgrade Race V4",
+    Default = false,
+    Callback = function(state)
+        getgenv().AutoUpgradeRaceV4 = state
+        while getgenv().AutoUpgradeRaceV4 do
+            wait(1)
+            game.ReplicatedStorage.Remotes.CommF_:InvokeServer("EvolveRace", "RaceV4")
+        end
     end
-end)
+})
 
-UpgradeRaceSection:NewButton("Teleport to Race Trial", "Teleporta para a prova da raça", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(29875, 14896, 120)
-end)
+UpgradeRaceTab:AddButton({
+    Name = "Teleport to Race Trial",
+    Callback = function()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(29875, 14896, 120)
+    end
+})
+
+-- FINALIZA E EXIBE O GUI
+OrionLib:Init()
